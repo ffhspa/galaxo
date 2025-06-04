@@ -2,6 +2,7 @@ from datetime import datetime
 from dataclasses import dataclass
 from GALAXO.CONFIG.Constants import Constants
 import base64
+import json
 from playwright.sync_api import sync_playwright
 
 
@@ -36,7 +37,11 @@ class PriceHistoryClient:
                 request_context = p.request.new_context(
                     extra_http_headers=Constants.HEADERS
                 )
-                response = request_context.post(self.BASE_URL, json=payload)
+                response = request_context.post(
+                    self.BASE_URL,
+                    data=json.dumps(payload),
+                    headers={"Content-Type": "application/json"}
+                )
                 return response.json()
         except Exception as e:
             Constants.LOGGER.error(

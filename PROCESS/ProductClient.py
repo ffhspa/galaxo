@@ -82,5 +82,7 @@ class ProductClient:
             return None
 
     def shutdown(self):
-        """Placeholder for API compatibility."""
-        pass
+        if hasattr(self.details_client, "close"):
+            self.details_client.close()
+        if hasattr(self.availability_client, "close"):
+            self.availability_client.close()
