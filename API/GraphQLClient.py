@@ -1,28 +1,31 @@
 import json
 import time
-import requests
+from playwright.sync_api import sync_playwright
 from GALAXO.CONFIG.Constants import Constants
 
 class GraphQLClient:
     BASE_URL = Constants.BASE_URL
 
     def __init__(self, max_retries: int = 5, backoff_factor: float = 1.0, timeout: int = 5) -> None:
-        self.session = requests.Session()
         self.max_retries = max_retries
         self.backoff_factor = backoff_factor
         self.timeout = timeout
+        self._playwright = sync_playwright().start()
+        self._browser = self._playwright.firefox.launch(headless=True)
+        self._context = self._browser.new_context()
+        self._page = self._context.new_page()
 
     def send_request(self, payload):
         for attempt in range(1, self.max_retries + 1):
             try:
-                response = self.session.post(
+                resp = self._page.request.post(
                     self.BASE_URL,
                     data=json.dumps(payload),
                     headers={"Content-Type": "application/json", **Constants.HEADERS},
-                    timeout=self.timeout,
+                    timeout=self.timeout * 1000,
                 )
-                response.raise_for_status()
-                response_content = response.json()
+                resp.raise_for_status()
+                response_content = resp.json()
 
                 if "errors" in response_content:
                     Constants.LOGGER.error(f"GraphQL errors: {response_content['errors']}")
@@ -45,6 +48,11 @@ class GraphQLClient:
         self.close()
 
     def close(self) -> None:
-        if self.session:
-            self.session.close()
-            self.session = None
+        if hasattr(self, "_page"):
+            self._page.close()
+        if hasattr(self, "_context"):
+            self._context.close()
+        if hasattr(self, "_browser"):
+            self._browser.close()
+        if hasattr(self, "_playwright"):
+            self._playwright.stop()
