@@ -18,6 +18,8 @@ Galaxo ist eine Python-Anwendung mit grafischer Benutzeroberfläche, die Produkt
    ```bash
    pip install -r requirements.txt
    playwright install
+   # optional: for headless environments
+   sudo apt-get install -y xvfb
    ```
 
 ## Anwendung starten
@@ -25,6 +27,10 @@ Galaxo ist eine Python-Anwendung mit grafischer Benutzeroberfläche, die Produkt
 ```bash
 python Galaxo_GUI.py
 ```
+
+In Umgebungen ohne grafische Oberfläche startet das Skript automatisch einen
+virtuellen X-Server (Xvfb) über `pyvirtualdisplay`. Dadurch lässt sich die GUI
+auch headless ausführen.
 
 Beim Start öffnet sich die Oberfläche und zeigt alle gespeicherten Produkte an.
 

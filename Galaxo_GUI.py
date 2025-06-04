@@ -2,6 +2,8 @@ import threading
 import tkinter as tk
 from tkinter import ttk
 import os
+from pyvirtualdisplay import Display
+import atexit
 from GALAXO.PROCESS.GalaxoProcess import GalaxoProcess
 from GALAXO.CONFIG.Constants import Constants
 from GALAXO.GUI.FilterFrame import FilterFrame
@@ -9,13 +11,23 @@ from GALAXO.GUI.ProductWidget import ProductWidget
 from GALAXO.UTILS.Utils import Utils
 from GALAXO.PROCESS.ProductFactory import ProductFactory
 
+# Start a virtual X display if none is available
+display = None
+if not os.environ.get("DISPLAY"):
+    display = Display(visible=False, size=(1024, 768))
+    display.start()
+    atexit.register(display.stop)
+
 class ProductListApp:
     def __init__(self, root):
         self.root = root
         style = ttk.Style()
         style.theme_use(Constants.THEME)
         self.root.title(Constants.TITLE)
-        self.root.state('zoomed')
+        try:
+            self.root.state('zoomed')
+        except tk.TclError:
+            self.root.state('normal')
         self.root.configure(bg=Constants.BG_COLOR)
         self.galaxo_process = GalaxoProcess()
 
