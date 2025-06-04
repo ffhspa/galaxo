@@ -4,7 +4,7 @@ from GALAXO.LOGGER.Logger import Logger
 
 class Constants:
     
-    LOG_LEVEL = LogLevel.WARNING
+    LOG_LEVEL = LogLevel.INFO
     #Logger
     BASE_PATH = __import__('pathlib').Path(__file__).resolve().parents[1]  
     LOG_PATH =   os.path.join(BASE_PATH,'Logs')
