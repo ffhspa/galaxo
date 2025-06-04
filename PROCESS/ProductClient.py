@@ -86,3 +86,5 @@ class ProductClient:
             self.details_client.close()
         if hasattr(self.availability_client, "close"):
             self.availability_client.close()
+        if hasattr(self.price_history_client, "close"):
+            self.price_history_client.close()
