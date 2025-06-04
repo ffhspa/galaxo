@@ -2,6 +2,7 @@ import threading
 import tkinter as tk
 from tkinter import ttk
 import os
+import sys
 from pyvirtualdisplay import Display
 import atexit
 from GALAXO.PROCESS.GalaxoProcess import GalaxoProcess
@@ -13,7 +14,7 @@ from GALAXO.PROCESS.ProductFactory import ProductFactory
 
 # Start a virtual X display if none is available
 display = None
-if not os.environ.get("DISPLAY"):
+if sys.platform.startswith("linux") and not os.environ.get("DISPLAY"):
     display = Display(visible=False, size=(1024, 768))
     display.start()
     atexit.register(display.stop)
