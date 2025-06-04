@@ -17,7 +17,6 @@ Galaxo ist eine Python-Anwendung mit grafischer Benutzeroberfläche, die Produkt
 2. Abhängigkeiten aus `requirements.txt` installieren:
    ```bash
    pip install -r requirements.txt
-   playwright install
    # optional: for headless environments
    sudo apt-get install -y xvfb
    ```

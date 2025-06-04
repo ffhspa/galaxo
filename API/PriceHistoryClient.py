@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from GALAXO.CONFIG.Constants import Constants
 import base64
 import json
-from playwright.sync_api import sync_playwright
+import requests
 
 
 @dataclass
@@ -15,6 +15,7 @@ class PriceHistoryClient:
         
     def __init__(self):
         self.BASE_URL = Constants.BASE_URL_HISTORY
+        self.session = requests.Session()
 
     def encode_product_id(self, product_id):                
         full_string = "Product\nd" + str(product_id) + ":1:406802"
@@ -33,16 +34,14 @@ class PriceHistoryClient:
             }
         }
         try:
-            with sync_playwright() as p:
-                request_context = p.request.new_context(
-                    extra_http_headers=Constants.HEADERS
-                )
-                response = request_context.post(
-                    self.BASE_URL,
-                    data=json.dumps(payload),
-                    headers={"Content-Type": "application/json"}
-                )
-                return response.json()
+            response = self.session.post(
+                self.BASE_URL,
+                data=json.dumps(payload),
+                headers={"Content-Type": "application/json", **Constants.HEADERS},
+                timeout=5,
+            )
+            response.raise_for_status()
+            return response.json()
         except Exception as e:
             Constants.LOGGER.error(
                 f"Fehler beim Abrufen der Preishistorie für Produkt-ID {product_id}: {e} {payload} {self.BASE_URL}  evtl. hat sich die URL geändert!!!!!"
