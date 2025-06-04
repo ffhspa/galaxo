@@ -40,8 +40,9 @@ class ProductListApp:
         self.category_counts = {}
         
         self._create_widgets()
-        self._load_products()
-        self._check_log()
+        # Load products and check logs after the main loop has started
+        self.root.after_idle(self._load_products)
+        self.root.after_idle(self._check_log)
 
     # --- GUI Setup ---
 
