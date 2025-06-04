@@ -1,9 +1,9 @@
 from datetime import datetime
 from dataclasses import dataclass
 from GALAXO.CONFIG.Constants import Constants
+from GALAXO.API.GraphQLClient import GraphQLClient
 import base64
 import json
-import requests
 
 
 @dataclass
@@ -11,11 +11,11 @@ class PriceHistoryPoint:
     amount_incl: float
     valid_from: str
 
-class PriceHistoryClient:
-        
-    def __init__(self):
+class PriceHistoryClient(GraphQLClient):
+
+    def __init__(self, max_retries: int = 5, backoff_factor: float = 1.0, timeout: int = 5):
+        super().__init__(max_retries=max_retries, backoff_factor=backoff_factor, timeout=timeout)
         self.BASE_URL = Constants.BASE_URL_HISTORY
-        self.session = requests.Session()
 
     def encode_product_id(self, product_id):                
         full_string = "Product\nd" + str(product_id) + ":1:406802"
@@ -34,14 +34,8 @@ class PriceHistoryClient:
             }
         }
         try:
-            response = self.session.post(
-                self.BASE_URL,
-                data=json.dumps(payload),
-                headers={"Content-Type": "application/json", **Constants.HEADERS},
-                timeout=5,
-            )
-            response.raise_for_status()
-            return response.json()
+            response = self.send_request(payload)
+            return response
         except Exception as e:
             Constants.LOGGER.error(
                 f"Fehler beim Abrufen der Preishistorie für Produkt-ID {product_id}: {e} {payload} {self.BASE_URL}"
