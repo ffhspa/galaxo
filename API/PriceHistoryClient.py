@@ -44,7 +44,7 @@ class PriceHistoryClient:
             return response.json()
         except Exception as e:
             Constants.LOGGER.error(
-                f"Fehler beim Abrufen der Preishistorie für Produkt-ID {product_id}: {e} {payload} {self.BASE_URL}  evtl. hat sich die URL geändert!!!!!"
+                f"Fehler beim Abrufen der Preishistorie für Produkt-ID {product_id}: {e} {payload} {self.BASE_URL}"
             )
             return {"error": str(e)}
 
