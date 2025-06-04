@@ -1,3 +1,4 @@
+import threading
 import tkinter as tk
 from tkinter import ttk
 import os
@@ -75,6 +76,8 @@ class ProductListApp:
         delta = -1 * int(event.delta / 120) * 2 if os.name == 'nt' else -1 * int(event.delta)
         self.canvas.yview_scroll(delta, "units")
 
+    def _run_in_thread(self, func):
+        threading.Thread(target=func, daemon=True).start()
 
     def _update_selected_count_label(self):
         self.filter_frame.selected_product_count_label.config(
@@ -142,6 +145,9 @@ class ProductListApp:
         self.filter_frame.update_status_label(f"{count} Product gelöscht!")
 
     def _update_prices(self):
+        self._run_in_thread(self._update_prices_thread)
+
+    def _update_prices_thread(self):
         try:
             self.galaxo_process.process_update_prices()
             self.filter_frame.update_status_label("Update abgeschlossen")
@@ -155,6 +161,9 @@ class ProductListApp:
             Constants.LOGGER.error(f"Fehler beim Aktualisieren der Preise: {e}")
 
     def _add_favorit(self):
+        self._run_in_thread(self._add_favorit_thread)
+
+    def _add_favorit_thread(self):
         url = self.filter_frame.search_entry.get().strip()
         self.filter_frame.search_entry.delete(0, tk.END)
         try:
