@@ -5,7 +5,6 @@ from GALAXO.PROCESS.ProductStorage import ProductStorage
 from GALAXO.PROCESS.ProductClient import ProductClient
 from GALAXO.UTILS.Utils import Utils
 from GALAXO.PROCESS.ProductData import ProductData
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 class GalaxoProcess:
@@ -40,22 +39,15 @@ class GalaxoProcess:
         self._save_products()
 
     def process_update_prices(self):
-        with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = {
-                executor.submit(
-                    self.product_client.get_full_product_details, pd.product_id
-                ): pd
-                for pd in self._cached_products
-            }
-
-            for future in as_completed(futures):
-                pd = futures[future]
-                try:
-                    details = future.result()
-                    if details:
-                        ProductFactory.update_existing(pd, details)
-                except Exception as e:
-                    Constants.LOGGER.error(f"Fehler bei Produkt {pd.product_id}: {e}", exc_info=True)
+        for pd in self._cached_products:
+            try:
+                details = self.product_client.get_full_product_details(pd.product_id)
+                if details:
+                    ProductFactory.update_existing(pd, details)
+            except Exception as e:
+                Constants.LOGGER.error(
+                    f"Fehler bei Produkt {pd.product_id}: {e}", exc_info=True
+                )
 
         self._save_products()
 

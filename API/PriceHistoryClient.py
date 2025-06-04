@@ -1,8 +1,8 @@
 from datetime import datetime
 from dataclasses import dataclass
 from GALAXO.CONFIG.Constants import Constants
-from GALAXO.API.GraphQLClient import GraphQLClient
 import base64
+from playwright.sync_api import sync_playwright
 
 
 @dataclass
@@ -10,10 +10,9 @@ class PriceHistoryPoint:
     amount_incl: float
     valid_from: str
 
-class PriceHistoryClient(GraphQLClient):
+class PriceHistoryClient:
         
     def __init__(self):
-        super().__init__()
         self.BASE_URL = Constants.BASE_URL_HISTORY
 
     def encode_product_id(self, product_id):                
@@ -32,11 +31,17 @@ class PriceHistoryClient(GraphQLClient):
                 "historyFrom": None
             }
         }
-        try:           
-            response = self.send_request(payload)
-            return response
+        try:
+            with sync_playwright() as p:
+                request_context = p.request.new_context(
+                    extra_http_headers=Constants.HEADERS
+                )
+                response = request_context.post(self.BASE_URL, json=payload)
+                return response.json()
         except Exception as e:
-            Constants.LOGGER.error(f"Fehler beim Abrufen der Preishistorie für Produkt-ID {product_id}: {e} {payload} {self.BASE_URL}  evtl. hat sich die URL geändert!!!!!")
+            Constants.LOGGER.error(
+                f"Fehler beim Abrufen der Preishistorie für Produkt-ID {product_id}: {e} {payload} {self.BASE_URL}  evtl. hat sich die URL geändert!!!!!"
+            )
             return {"error": str(e)}
 
     def get_pdp_price_history(self, product_id: str) -> dict:
