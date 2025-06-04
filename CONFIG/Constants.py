@@ -6,7 +6,7 @@ class Constants:
     
     LOG_LEVEL = LogLevel.WARNING
     #Logger
-    BASE_PATH = __import__('pathlib').Path(__file__).resolve().parents[2]#os.path.dirname(os.path.abspath(__file__))    
+    BASE_PATH = __import__('pathlib').Path(__file__).resolve().parents[1]  
     LOG_PATH =   os.path.join(BASE_PATH,'Logs')
     LOG_FILE_NAME = "galaxo.log"
     CACHE_DIR_IMAGES = os.path.join(BASE_PATH,'Images') 
