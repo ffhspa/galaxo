@@ -18,11 +18,11 @@ class Constants:
     #GUI
     TITLE="Galaxus/Digitec Produkte"
     IMAGE_SIZE =(250, 250)
-    ITEM_WIDTH = 490
+    ITEM_WIDTH = 460
     ITEM_HEIGHT = 360
     CHAR_LIMIT = 40
     WRAPLENGTH = 240
-    NUM_COLUMNS = 3
+    NUM_COLUMNS = 4
     PADDING_X = 10
     PADDING_Y = 10
     BG_COLOR = "#FFFFFF"
