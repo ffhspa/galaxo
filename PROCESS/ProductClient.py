@@ -1,4 +1,3 @@
-from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 
 from GALAXO.API.ProductDetailsClient_PDP import ProductDetailsClient_PDP
@@ -30,47 +29,34 @@ class ProductClient:
         self,
         details_client: Optional[ProductDetailsClient_PDP] = None,
         availability_client: Optional[OfferAvailabilityClient] = None,
-        price_history_client: Optional[PriceHistoryClient] = None,
-        executor: Optional[ThreadPoolExecutor] = None
+        price_history_client: Optional[PriceHistoryClient] = None
     ):
         self.details_client = details_client or ProductDetailsClient_PDP()
         self.availability_client = availability_client or OfferAvailabilityClient()
         self.price_history_client = price_history_client or PriceHistoryClient()
-        self.executor = executor or ThreadPoolExecutor(max_workers=10)
-        self._own_executor = executor is None 
         self.logger = Constants.LOGGER
 
     def get_full_product_details(self, product_id: str) -> Optional[ProductDetails]:
         self.logger.info(f"Fetching full product details for: {product_id}")
         try:
-            # Starte parallele Aufrufe für PDP und Preisverlauf
-            future_details = self.executor.submit(
-                self.details_client.get_product_details_pdp, product_id)
-            future_price_history = self.executor.submit(
-                self.price_history_client.get_pdp_price_history, product_id)
+            pdp_data = self.details_client.get_product_details_pdp(product_id)
 
             try:
-                pdp_data = future_details.result()
+                price_history = self.price_history_client.get_pdp_price_history(product_id)
             except Exception as e:
-                self.logger.error(f"Error fetching PDP data for {product_id}: {e}", exc_info=True)
-                return None
-
-            # Hole Verfügbarkeitsdaten basierend auf PDP-Ergebnis
-            future_stock = self.executor.submit(
-                self.availability_client.get_offer_availability,
-                product_id, pdp_data.offer_id, pdp_data.offer_type
-            )
-
-            try:
-                price_history = future_price_history.result()
-            except Exception as e:
-                self.logger.warning(f"Price history unavailable for {product_id}: {e}", exc_info=True)
+                self.logger.warning(
+                    f"Price history unavailable for {product_id}: {e}", exc_info=True
+                )
                 price_history = {}
 
             try:
-                stock_count = future_stock.result()
+                stock_count = self.availability_client.get_offer_availability(
+                    product_id, pdp_data.offer_id, pdp_data.offer_type
+                )
             except Exception as e:
-                self.logger.warning(f"Stock count unavailable for {product_id}: {e}", exc_info=True)
+                self.logger.warning(
+                    f"Stock count unavailable for {product_id}: {e}", exc_info=True
+                )
                 stock_count = 0
 
             current_price = pdp_data.price
@@ -96,5 +82,5 @@ class ProductClient:
             return None
 
     def shutdown(self):
-        if self._own_executor:
-            self.executor.shutdown(wait=True)
+        """Placeholder for API compatibility."""
+        pass
