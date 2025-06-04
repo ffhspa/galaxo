@@ -1,6 +1,7 @@
 import json
 import time
-from playwright.sync_api import sync_playwright
+import asyncio
+from playwright.async_api import async_playwright
 from GALAXO.CONFIG.Constants import Constants
 
 class GraphQLClient:
@@ -10,22 +11,27 @@ class GraphQLClient:
         self.max_retries = max_retries
         self.backoff_factor = backoff_factor
         self.timeout = timeout
-        self._playwright = sync_playwright().start()
-        self._browser = self._playwright.firefox.launch(headless=True)
-        self._context = self._browser.new_context()
-        self._page = self._context.new_page()
+        self._loop = asyncio.new_event_loop()
+        self._playwright = self._loop.run_until_complete(async_playwright().start())
+        self._browser = self._loop.run_until_complete(self._playwright.firefox.launch(headless=True))
+        self._context = self._loop.run_until_complete(self._browser.new_context())
+        self._page = self._loop.run_until_complete(self._context.new_page())
 
     def send_request(self, payload):
+        return self._loop.run_until_complete(self._send_request(payload))
+
+    async def _send_request(self, payload):
         for attempt in range(1, self.max_retries + 1):
             try:
-                resp = self._page.request.post(
+                resp = await self._page.request.post(
                     self.BASE_URL,
                     data=json.dumps(payload),
                     headers={"Content-Type": "application/json", **Constants.HEADERS},
                     timeout=self.timeout * 1000,
                 )
-                resp.raise_for_status()
-                response_content = resp.json()
+                if not resp.ok:
+                    raise Exception(f"HTTP {resp.status}")
+                response_content = await resp.json()
 
                 if "errors" in response_content:
                     Constants.LOGGER.error(f"GraphQL errors: {response_content['errors']}")
@@ -42,17 +48,20 @@ class GraphQLClient:
 
                 sleep_time = self.backoff_factor * (2 ** (attempt - 1))
                 Constants.LOGGER.info(f"[GraphQLClient] Retrying in {sleep_time:.1f} seconds...")
-                time.sleep(sleep_time)
+                await asyncio.sleep(sleep_time)
 
     def __del__(self):
         self.close()
 
     def close(self) -> None:
+        if not hasattr(self, "_loop") or self._loop.is_closed():
+            return
         if hasattr(self, "_page"):
-            self._page.close()
+            self._loop.run_until_complete(self._page.close())
         if hasattr(self, "_context"):
-            self._context.close()
+            self._loop.run_until_complete(self._context.close())
         if hasattr(self, "_browser"):
-            self._browser.close()
+            self._loop.run_until_complete(self._browser.close())
         if hasattr(self, "_playwright"):
-            self._playwright.stop()
+            self._loop.run_until_complete(self._playwright.stop())
+        self._loop.close()
