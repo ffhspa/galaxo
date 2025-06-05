@@ -146,4 +146,4 @@ class Utils:
         match = re.search(r"(\d+)$", cleaned_url)
         return int(match.group(1)) if match else None
     
-    
+
