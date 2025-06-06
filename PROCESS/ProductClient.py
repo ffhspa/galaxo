@@ -31,12 +31,27 @@ class ProductClient:
         availability_client: Optional[OfferAvailabilityClient] = None,
         price_history_client: Optional[PriceHistoryClient] = None
     ):
-        self.details_client = details_client or ProductDetailsClient_PDP()
-        self.availability_client = availability_client or OfferAvailabilityClient()
-        self.price_history_client = price_history_client or PriceHistoryClient()
+        """Create the ProductClient.
+
+        The heavy GraphQL clients are instantiated lazily when they are first
+        needed to avoid a slow application startup.
+        """
+        self.details_client = details_client
+        self.availability_client = availability_client
+        self.price_history_client = price_history_client
         self.logger = Constants.LOGGER
 
+    def _ensure_clients(self) -> None:
+        """Create API clients on demand."""
+        if self.details_client is None:
+            self.details_client = ProductDetailsClient_PDP()
+        if self.availability_client is None:
+            self.availability_client = OfferAvailabilityClient()
+        if self.price_history_client is None:
+            self.price_history_client = PriceHistoryClient()
+
     def get_full_product_details(self, product_id: str) -> Optional[ProductDetails]:
+        self._ensure_clients()
         self.logger.info(f"Fetching full product details for: {product_id}")
         try:
             pdp_data = self.details_client.get_product_details_pdp(product_id)
