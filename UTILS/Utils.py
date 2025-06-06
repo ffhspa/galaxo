@@ -2,7 +2,7 @@ import hashlib
 import os
 from tkinter import font as tkfont
 import tkinter as tk
-from GALAXO.CONFIG.Constants import Constants
+from CONFIG.Constants import Constants
 from datetime import datetime
 import re
 from urllib.parse import urlsplit

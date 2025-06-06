@@ -2,8 +2,7 @@ import json
 import time
 import asyncio
 from playwright.async_api import async_playwright
-from GALAXO.CONFIG.Constants import Constants
-
+from CONFIG.Constants import Constants
 
 class GraphQLClient:
     """GraphQL client using Playwright. Instances share a single browser."""

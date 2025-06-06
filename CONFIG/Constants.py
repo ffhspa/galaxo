@@ -1,6 +1,6 @@
 import os
-from GALAXO.CONFIG.LogLevel import LogLevel
-from GALAXO.LOGGER.Logger import Logger
+from CONFIG.LogLevel import LogLevel
+from LOGGER.Logger import Logger
 
 class Constants:
     
@@ -144,7 +144,7 @@ class Constants:
         """
         Setzt den neuen LogLevel sowohl in der Konstante als auch im Logger.
         """
-        from GALAXO.CONFIG.LogLevel import LogLevel  # sicherstellen, dass Mapping aktuell ist
+        from CONFIG.LogLevel import LogLevel  # sicherstellen, dass Mapping aktuell ist
 
         cls.LOG_LEVEL = new_level
         cls.LOGGER.setLevel(new_level)

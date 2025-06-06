@@ -1,7 +1,7 @@
 from datetime import datetime
 from dataclasses import dataclass
-from GALAXO.CONFIG.Constants import Constants
-from GALAXO.API.GraphQLClient import GraphQLClient
+from CONFIG.Constants import Constants
+from API.GraphQLClient import GraphQLClient
 import base64
 import json
 

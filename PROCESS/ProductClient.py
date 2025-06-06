@@ -1,9 +1,9 @@
 from typing import Optional
 
-from GALAXO.API.ProductDetailsClient_PDP import ProductDetailsClient_PDP
-from GALAXO.CONFIG.Constants import Constants
-from GALAXO.API.OfferAvailabilityClient import OfferAvailabilityClient
-from GALAXO.API.PriceHistoryClient import PriceHistoryClient
+from API.ProductDetailsClient_PDP import ProductDetailsClient_PDP
+from CONFIG.Constants import Constants
+from API.OfferAvailabilityClient import OfferAvailabilityClient
+from API.PriceHistoryClient import PriceHistoryClient
 
 
 class ProductDetails:

@@ -1,9 +1,9 @@
 from typing import Union
 from datetime import datetime
-from GALAXO.PROCESS.ProductClient import ProductDetails
-from GALAXO.PROCESS.ProductData import ProductData
-from GALAXO.PROCESS.ProductDataCalculator import ProductDataCalculator
-from GALAXO.UTILS.ProductDataUtils import ProductDataUtils
+from PROCESS.ProductClient import ProductDetails
+from PROCESS.ProductData import ProductData
+from PROCESS.ProductDataCalculator import ProductDataCalculator
+from UTILS.ProductDataUtils import ProductDataUtils
 
 class ProductFactory:
 

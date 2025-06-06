@@ -1,7 +1,7 @@
 import os
 import logging
 from datetime import datetime
-from GALAXO.CONFIG.Version import Version
+from CONFIG.Version import Version
 
 class Logger:
     def __init__(self, log_path, log_filename, log_level):

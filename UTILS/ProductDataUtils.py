@@ -1,4 +1,4 @@
-from GALAXO.CONFIG.Constants import Constants
+from CONFIG.Constants import Constants
 class ProductDataUtils:
     
     @staticmethod

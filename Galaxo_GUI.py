@@ -5,12 +5,12 @@ import os
 import sys
 from pyvirtualdisplay import Display
 import atexit
-from GALAXO.PROCESS.GalaxoProcess import GalaxoProcess
-from GALAXO.CONFIG.Constants import Constants
-from GALAXO.GUI.FilterFrame import FilterFrame
-from GALAXO.GUI.ProductWidget import ProductWidget
-from GALAXO.UTILS.Utils import Utils
-from GALAXO.PROCESS.ProductFactory import ProductFactory
+from PROCESS.GalaxoProcess import GalaxoProcess
+from CONFIG.Constants import Constants
+from GUI.FilterFrame import FilterFrame
+from GUI.ProductWidget import ProductWidget
+from UTILS.Utils import Utils
+from PROCESS.ProductFactory import ProductFactory
 
 # Start a virtual X display if none is available
 display = None

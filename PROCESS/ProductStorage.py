@@ -6,7 +6,7 @@ import glob
 from datetime import datetime
 import hashlib
 
-from GALAXO.CONFIG.Constants import Constants
+from CONFIG.Constants import Constants
 
 class ProductStorage:
 

@@ -1,6 +1,6 @@
-from GALAXO.UTILS.Utils import Utils
-from GALAXO.CONFIG.Constants import Constants
-from GALAXO.PROCESS.ProductFactory import ProductFactory
+from UTILS.Utils import Utils
+from CONFIG.Constants import Constants
+from PROCESS.ProductFactory import ProductFactory
 
 class ProductConfig:
     @staticmethod

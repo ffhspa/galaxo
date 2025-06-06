@@ -1,4 +1,4 @@
-from GALAXO.API.GraphQLClient import GraphQLClient
+from API.GraphQLClient import GraphQLClient
 
 class OfferAvailabilityClient(GraphQLClient):
     
