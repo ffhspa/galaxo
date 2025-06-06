@@ -1,0 +1,8 @@
+__pycache__/
+**/__pycache__/
+Logs/
+Backup/
+galaxo_data.json
+Images/
+venv/
+*.pyc
