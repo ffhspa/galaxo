@@ -26,7 +26,10 @@ class ProductListApp:
         style.theme_use(Constants.THEME)
         self.root.title(Constants.TITLE)
         try:
-            self.root.state('zoomed')
+            if sys.platform.startswith("linux"):
+                self.root.attributes("-zoomed", True)
+            else:
+                self.root.state('zoomed')
         except tk.TclError:
             self.root.state('normal')
         self.root.configure(bg=Constants.BG_COLOR)
