@@ -1,5 +1,5 @@
-from GALAXO.CONFIG.Constants import Constants
-from GALAXO.API.GraphQLClient import GraphQLClient
+from CONFIG.Constants import Constants
+from API.GraphQLClient import GraphQLClient
 
 class ProductDetails:
     def __init__(self, name, brand, product_id, price, image_url, product_url, category, offer_id, shop_offer_id,offer_type):

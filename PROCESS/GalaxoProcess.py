@@ -1,10 +1,10 @@
 from typing import List
-from GALAXO.CONFIG.Constants import Constants
-from GALAXO.PROCESS.ProductFactory import ProductFactory
-from GALAXO.PROCESS.ProductStorage import ProductStorage
-from GALAXO.PROCESS.ProductClient import ProductClient
-from GALAXO.UTILS.Utils import Utils
-from GALAXO.PROCESS.ProductData import ProductData
+from CONFIG.Constants import Constants
+from PROCESS.ProductFactory import ProductFactory
+from PROCESS.ProductStorage import ProductStorage
+from PROCESS.ProductClient import ProductClient
+from UTILS.Utils import Utils
+from PROCESS.ProductData import ProductData
 
 
 class GalaxoProcess:

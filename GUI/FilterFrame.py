@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
 from typing import Counter
-from GALAXO.CONFIG.Constants import Constants
-from GALAXO.CONFIG.Version import Version
-from GALAXO.UTILS.Utils import Utils
-from GALAXO.CONFIG.LogLevel import LogLevel
+from CONFIG.Constants import Constants
+from CONFIG.Version import Version
+from UTILS.Utils import Utils
+from CONFIG.LogLevel import LogLevel
 
 class FilterFrame(ttk.LabelFrame):
     def __init__(self, parent, apply_filters_callback, apply_sort_callback, delete_selected_products_callback, apply_filters_debounced, update_prices_callback, add_favorit_callback):
@@ -74,7 +74,7 @@ class FilterFrame(ttk.LabelFrame):
 
 
     def _on_loglevel_changed(self, event):
-        from GALAXO.CONFIG.LogLevel import LogLevel
+        from CONFIG.LogLevel import LogLevel
 
         selected_level = self.loglevel_combobox.get().upper()
         level = getattr(LogLevel, selected_level, LogLevel.WARNING)

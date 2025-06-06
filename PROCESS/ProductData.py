@@ -1,5 +1,5 @@
 from dataclasses import dataclass, asdict
-from GALAXO.PROCESS.ProductDataCalculator import ProductDataCalculator
+from PROCESS.ProductDataCalculator import ProductDataCalculator
 
 @dataclass
 class ProductData:

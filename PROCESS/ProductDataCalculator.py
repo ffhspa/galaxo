@@ -1,5 +1,5 @@
-from GALAXO.UTILS.ProductDataUtils import ProductDataUtils
-from GALAXO.CONFIG.Constants import Constants
+from UTILS.ProductDataUtils import ProductDataUtils
+from CONFIG.Constants import Constants
 
 class ProductDataCalculator:
 

@@ -5,8 +5,8 @@ from io import BytesIO
 from PIL import Image, ImageTk
 import requests
 from requests.adapters import HTTPAdapter
-from GALAXO.UTILS.Utils import Utils
-from GALAXO.CONFIG.Constants import Constants
+from UTILS.Utils import Utils
+from CONFIG.Constants import Constants
 
 class ImageLoader:
     _session = requests.Session()

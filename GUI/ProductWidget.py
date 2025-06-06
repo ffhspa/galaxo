@@ -1,9 +1,9 @@
 import tkinter as tk
 import webbrowser
-from GALAXO.GUI.ImageLoader import ImageLoader
-from GALAXO.CONFIG.Constants import Constants
-from GALAXO.CONFIG.ProductConfig import ProductConfig
-from GALAXO.UTILS.Utils import Utils
+from GUI.ImageLoader import ImageLoader
+from CONFIG.Constants import Constants
+from CONFIG.ProductConfig import ProductConfig
+from UTILS.Utils import Utils
 
 
 class ProductWidget(tk.Frame):
