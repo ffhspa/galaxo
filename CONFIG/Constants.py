@@ -4,7 +4,7 @@ from LOGGER.Logger import Logger
 
 class Constants:
     
-    LOG_LEVEL = LogLevel.INFO
+    LOG_LEVEL = LogLevel.WARNING
     #Logger
     BASE_PATH = __import__('pathlib').Path(__file__).resolve().parents[1]  
     LOG_PATH =   os.path.join(BASE_PATH,'Logs')
