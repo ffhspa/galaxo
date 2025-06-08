@@ -1,7 +1,8 @@
 import hashlib
 import os
 from functools import lru_cache
-from PyQt6.QtGui import QFont
+from tkinter import font as tkfont
+import tkinter as tk
 from CONFIG.Constants import Constants
 from datetime import datetime
 import re
@@ -25,10 +26,7 @@ class Utils:
     @staticmethod
     @lru_cache(maxsize=None)
     def create_font(size, weight="normal", family="Arial"):
-        font = QFont(family, size)
-        if weight == "bold":
-            font.setWeight(QFont.Weight.Bold)
-        return font
+        return tkfont.Font(family=family, size=size, weight=weight or "normal")
 
     @staticmethod
     def truncate_text(text):
@@ -124,6 +122,14 @@ class Utils:
         except OSError:
             return False
     
+    @staticmethod
+    def bind_widget_events(widget, on_click, on_double_click):
+        for child in widget.winfo_children():
+            if isinstance(child, tk.Label):
+                child.bind("<Button-1>", on_click)
+                child.bind("<Double-1>", on_double_click)
+        widget.bind("<Button-1>", on_click)
+        widget.bind("<Double-1>", on_double_click)
 
     @staticmethod
     def float_or_default(value, default=1.0):
