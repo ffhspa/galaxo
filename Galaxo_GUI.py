@@ -24,6 +24,10 @@ class ProductListApp:
         self.root = root
         style = ttk.Style()
         style.theme_use(Constants.THEME)
+        style.configure("TFrame", background=Constants.BG_COLOR)
+        style.configure("TLabelFrame", background=Constants.BG_COLOR)
+        style.configure("TLabel", background=Constants.BG_COLOR)
+        style.configure("TButton", font=Utils.create_font(Constants.FONT_SIZE_MEDIUM))
         self.root.title(Constants.TITLE)
         try:
             if sys.platform.startswith("linux"):

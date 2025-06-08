@@ -25,7 +25,7 @@ class Constants:
     NUM_COLUMNS = 4
     PADDING_X = 10
     PADDING_Y = 10
-    BG_COLOR = "#FFFFFF"
+    BG_COLOR = "#F0F0F0"
     DEFAULT_BORDER_COLOR = "#a6a2a1"
     REACHED_MIN_BORDER_COLOR = "#1EDD1A"
     REACHED_MAX_PRICE_COLOR = "#FF6B6B"
@@ -33,7 +33,7 @@ class Constants:
     CHANGED_STOCK_BORDER_COLOR = "#F4C35A"
     CHANGED_BOTH_BORDER_COLOR = "#cc33a6"
     PRODUCT_NOT_AVAILABLE_COLOR = "#000000"
-    SELECTED_COLOR = "#D3D3D3"
+    SELECTED_COLOR = "#CCE5FF"
     FONT = "Arial"
     FONT_SIZE_VERY_SMALL = 9
     FONT_SIZE_SMALL = 11
@@ -42,7 +42,7 @@ class Constants:
     FONT_SIZE_XL = 20
     FONT_SIZE_XXL = 21
     CATEGORY_DEFAULT = 'Alle Kategorien'
-    THEME = 'alt' # alt, clam, classic, default
+    THEME = 'clam' # alt, clam, classic, default
     
     #GUI Product Info
     PRODUCT_INFO_CURRENT_PRICE=''
