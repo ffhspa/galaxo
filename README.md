@@ -1,6 +1,6 @@
 # Galaxo
 
-Galaxo ist eine Python-Anwendung mit grafischer Benutzeroberfläche (PyQt6), die Produktdaten von **Digitec/Galaxus** verwaltet. Preise und Lagerbestände werden über GraphQL-Abfragen aktualisiert und lokal in `galaxo_data.json` gespeichert.
+Galaxo ist eine Python-Anwendung mit grafischer Benutzeroberfläche, die Produktdaten von **Digitec/Galaxus** verwaltet. Preise und Lagerbestände werden über GraphQL-Abfragen aktualisiert und lokal in `galaxo_data.json` gespeichert.
 
 ## Funktionen
 
@@ -14,7 +14,7 @@ Galaxo ist eine Python-Anwendung mit grafischer Benutzeroberfläche (PyQt6), die
 ## Installation
 
 1. Python 3.10 oder neuer installieren
-2. Abhängigkeiten aus `requirements.txt` installieren (inkl. PyQt6):
+2. Abhängigkeiten aus `requirements.txt` installieren:
    ```bash
    pip install -r requirements.txt
    # optional: for headless environments
