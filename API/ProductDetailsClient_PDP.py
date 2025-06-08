@@ -1,5 +1,5 @@
 from CONFIG.Constants import Constants
-from API.GraphQLClient import GraphQLClient
+from API.RequestGraphQLClient import RequestGraphQLClient
 
 class ProductDetails:
     def __init__(self, name, brand, product_id, price, image_url, product_url, category, offer_id, shop_offer_id,offer_type):
@@ -14,7 +14,7 @@ class ProductDetails:
         self.shop_offer_id = shop_offer_id
         self.offer_type = offer_type
         
-class ProductDetailsClient_PDP(GraphQLClient):
+class ProductDetailsClient_PDP(RequestGraphQLClient):
     
     def get_product_details_pdp(self, product_id):
         
