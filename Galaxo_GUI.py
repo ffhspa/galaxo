@@ -33,6 +33,9 @@ class ProductListApp:
         except tk.TclError:
             self.root.state('normal')
         self.root.configure(bg=Constants.BG_COLOR)
+        screen_w = self.root.winfo_screenwidth()
+        item_w = Constants.ITEM_WIDTH + Constants.PADDING_X
+        self.num_columns = max(1, screen_w // item_w)
         self.galaxo_process = GalaxoProcess()
 
         self.all_products = []
@@ -43,6 +46,7 @@ class ProductListApp:
         self.category_counts = {}
         
         self._create_widgets()
+        self.root.bind("<Configure>", self._on_root_resize)
         # Load products and check logs after the main loop has started
         self.root.after_idle(self._load_products)
         self.root.after_idle(self._check_log)
@@ -83,6 +87,14 @@ class ProductListApp:
         delta = -1 * int(event.delta / 120) * 2 if os.name == 'nt' else -1 * int(event.delta)
         self.canvas.yview_scroll(delta, "units")
 
+    def _on_root_resize(self, event):
+        width = self.root.winfo_width()
+        item_w = Constants.ITEM_WIDTH + Constants.PADDING_X
+        new_columns = max(1, width // item_w)
+        if new_columns != self.num_columns:
+            self.num_columns = new_columns
+            self._place_products()
+
     def _run_in_thread(self, func):
         threading.Thread(target=func, daemon=True).start()
 
@@ -110,7 +122,7 @@ class ProductListApp:
         width, height = Constants.ITEM_WIDTH, Constants.ITEM_HEIGHT
         item_w = width + Constants.PADDING_X
         item_h = height + Constants.PADDING_Y
-        num_columns = Constants.NUM_COLUMNS
+        num_columns = self.num_columns
 
         frame_width = num_columns * item_w - Constants.PADDING_X
         frame_height = ((num_products + num_columns - 1) // num_columns) * item_h - Constants.PADDING_Y
