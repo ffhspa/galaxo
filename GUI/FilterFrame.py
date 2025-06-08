@@ -63,6 +63,7 @@ class FilterFrame(ttk.LabelFrame):
         self.search_entry = tk.Entry(search_frame, width=30, font=Utils.create_font(Constants.FONT_SIZE_SMALL), insertontime=0, insertofftime=0)
         self.search_entry.pack(side="left", fill="x")
         self.search_entry.bind("<KeyRelease>", self.apply_filters_debounced)
+        self.search_entry.bind("<Control-a>", self._select_all_search)
         
         
                 # Loglevel-Dropdown ganz rechts neben dem Suchfeld
@@ -86,6 +87,12 @@ class FilterFrame(ttk.LabelFrame):
         self.loglevel_combobox.selection_clear()
         Constants.LOGGER.info(f"Loglevel:{selected_level}")
         self.update_status_label(f"Loglevel:{selected_level}", severity="info")
+
+
+    def _select_all_search(self, event):
+        event.widget.select_range(0, tk.END)
+        event.widget.icursor(tk.END)
+        return "break"
 
 
 
