@@ -60,9 +60,6 @@ class PriceHistoryClient(GraphQLClient):
             if not price_history:
                 return {"min_price": None, "max_price": None}
 
-            # Sortiere die Liste nach dem Datum (optional, aber falls du eine chronologische Reihenfolge benötigst)
-            price_history.sort(key=lambda x: datetime.fromisoformat(x.valid_from), reverse=True)
-
             # Berechne den minimalen und maximalen Preis
             min_price = min(price_history, key=lambda x: x.amount_incl).amount_incl
             max_price = max(price_history, key=lambda x: x.amount_incl).amount_incl

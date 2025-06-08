@@ -1,5 +1,6 @@
 import hashlib
 import os
+from functools import lru_cache
 from tkinter import font as tkfont
 import tkinter as tk
 from CONFIG.Constants import Constants
@@ -10,6 +11,7 @@ from urllib.parse import urlsplit
 class Utils:
 
     @staticmethod
+    @lru_cache(maxsize=1)
     def get_sort_options():
         return {
                 Constants.SORT_PRICE_UP: lambda x: float(x.current_price),
@@ -22,6 +24,7 @@ class Utils:
         return list(Utils.get_sort_options().keys())
 
     @staticmethod
+    @lru_cache(maxsize=None)
     def create_font(size, weight="normal", family="Arial"):
         return tkfont.Font(family=family, size=size, weight=weight or "normal")
 
@@ -83,9 +86,15 @@ class Utils:
 
     @staticmethod
     def get_file_hash_path(image_url):
-        filename = hashlib.md5(urlsplit(image_url).path.encode()).hexdigest() + ".png"
+        return Utils._cached_hash_path(urlsplit(image_url).path)
+
+    @staticmethod
+    @lru_cache(maxsize=128)
+    def _cached_hash_path(path: str) -> str:
+        filename = hashlib.md5(path.encode()).hexdigest() + ".png"
         return os.path.join(Constants.CACHE_DIR_IMAGES, filename)
 
+    @staticmethod
     def delete_image(image_url):
         try:
             cache_path = Utils.get_file_hash_path(image_url)
