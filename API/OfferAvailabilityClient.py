@@ -1,6 +1,6 @@
-from API.GraphQLClient import GraphQLClient
+from API.RequestGraphQLClient import RequestGraphQLClient
 
-class OfferAvailabilityClient(GraphQLClient):
+class OfferAvailabilityClient(RequestGraphQLClient):
     
     def get_offer_availability(self, product_id, sales_offer_id, offer_type):
         query = [{

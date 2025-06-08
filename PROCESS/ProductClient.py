@@ -41,18 +41,23 @@ class ProductClient:
         self.price_history_client = price_history_client
         self.logger = Constants.LOGGER
 
-    def _ensure_clients(self) -> None:
-        """Create API clients on demand."""
+    def _ensure_clients(self, include_price_history: bool = True) -> None:
+        """Create API clients on demand.
+
+        Only instantiates the PriceHistoryClient when ``include_price_history``
+        is ``True`` to avoid unnecessary Playwright usage during regular price
+        updates.
+        """
         if self.details_client is None:
             self.details_client = ProductDetailsClient_PDP()
         if self.availability_client is None:
             self.availability_client = OfferAvailabilityClient()
-        if self.price_history_client is None:
+        if include_price_history and self.price_history_client is None:
             self.price_history_client = PriceHistoryClient()
 
     def get_full_product_details(self, product_id: str, include_price_history: bool = True) -> Optional[ProductDetails]:
         """Fetch product details and optionally the price history."""
-        self._ensure_clients()
+        self._ensure_clients(include_price_history=include_price_history)
         self.logger.info(f"Fetching full product details for: {product_id}")
         try:
             pdp_data = self.details_client.get_product_details_pdp(product_id)
