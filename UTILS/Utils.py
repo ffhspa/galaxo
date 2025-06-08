@@ -119,10 +119,8 @@ class Utils:
             if isinstance(child, tk.Label):
                 child.bind("<Button-1>", on_click)
                 child.bind("<Double-1>", on_double_click)
-                child.configure(cursor="hand2")
         widget.bind("<Button-1>", on_click)
         widget.bind("<Double-1>", on_double_click)
-        widget.configure(cursor="hand2")
 
     @staticmethod
     def float_or_default(value, default=1.0):
