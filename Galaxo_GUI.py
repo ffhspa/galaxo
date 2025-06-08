@@ -1,149 +1,148 @@
-import threading
-import tkinter as tk
-from tkinter import ttk
 import os
 import sys
-from pyvirtualdisplay import Display
 import atexit
+import threading
+from PyQt6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QScrollArea,
+    QGridLayout
+)
+from PyQt6.QtCore import QTimer
+from pyvirtualdisplay import Display
 from PROCESS.GalaxoProcess import GalaxoProcess
+from PROCESS.ProductFactory import ProductFactory
 from CONFIG.Constants import Constants
 from GUI.FilterFrame import FilterFrame
 from GUI.ProductWidget import ProductWidget
 from UTILS.Utils import Utils
-from PROCESS.ProductFactory import ProductFactory
 
-# Start a virtual X display if none is available
+# Start a virtual display if none is available (headless environments)
 display = None
 if sys.platform.startswith("linux") and not os.environ.get("DISPLAY"):
     display = Display(visible=False, size=(1024, 768))
     display.start()
     atexit.register(display.stop)
 
-class ProductListApp:
-    def __init__(self, root):
-        self.root = root
-        style = ttk.Style()
-        style.theme_use(Constants.THEME)
-        style.configure("TFrame", background=Constants.BG_COLOR)
-        style.configure("TLabelFrame", background=Constants.BG_COLOR)
-        style.configure("TLabel", background=Constants.BG_COLOR)
-        style.configure("TButton", font=Utils.create_font(Constants.FONT_SIZE_MEDIUM))
-        self.root.title(Constants.TITLE)
-        try:
-            if sys.platform.startswith("linux"):
-                self.root.attributes("-zoomed", True)
-            else:
-                self.root.state('zoomed')
-        except tk.TclError:
-            self.root.state('normal')
-        self.root.configure(bg=Constants.BG_COLOR)
-        screen_w = self.root.winfo_screenwidth()
-        item_w = Constants.ITEM_WIDTH + Constants.PADDING_X
-        self.num_columns = max(1, screen_w // item_w)
-        self.galaxo_process = GalaxoProcess()
+class ProductListWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle(Constants.TITLE)
+        self.resize(1000, 700)
+        self.process = GalaxoProcess()
+
+        self.filter_frame = FilterFrame(
+            self,
+            self.apply_filters,
+            self.apply_sort,
+            self.delete_selected_products,
+            self.apply_filters_debounced,
+            self.update_prices,
+            self.add_favorite,
+        )
+
+        self.scroll_area = QScrollArea()
+        self.scroll_area_widget = QWidget()
+        self.grid = QGridLayout(self.scroll_area_widget)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setWidget(self.scroll_area_widget)
+
+        central = QWidget()
+        layout = QVBoxLayout(central)
+        layout.addWidget(self.filter_frame)
+        layout.addWidget(self.scroll_area)
+        self.setCentralWidget(central)
 
         self.all_products = []
         self.filtered_products = []
-        self.sort_options = Utils.get_sort_options()
-        self.selected_products = set()
         self.product_widgets = []
-        self.category_counts = {}
-        
-        self._create_widgets()
-        self.root.bind("<Configure>", self._on_root_resize)
-        # Load products and check logs after the main loop has started
-        self.root.after_idle(self._load_products)
-        self.root.after_idle(self._check_log)
+        self.sort_options = Utils.get_sort_options()
+        self.num_columns = Constants.NUM_COLUMNS
+        self.selected_products = set()
+        self.filter_timer = QTimer()
+        self.filter_timer.setSingleShot(True)
+        self.filter_timer.timeout.connect(self.apply_filters)
+        self.load_products()
 
-    # --- GUI Setup ---
-
-    def _create_widgets(self):
-        self.filter_frame = FilterFrame(
-            self.root, self.apply_filters, self._apply_sort,
-            self.delete_selected_products, self._apply_filters_debounced,
-            self._update_prices, self._add_favorit
-        )
-        self._create_canvas_frame()
-
-    def _create_canvas_frame(self):
-        self.canvas_frame = ttk.Frame(self.root, padding="1")
-        self.canvas_frame.grid(row=1, column=0, padx=10, pady=(0, 5), sticky="nsew")
-
-        self.canvas = tk.Canvas(self.canvas_frame, bg=Constants.BG_COLOR)
-        self.scroll_y = ttk.Scrollbar(self.canvas_frame, orient="vertical", command=self.canvas.yview)
-        self.canvas.configure(yscrollcommand=self.scroll_y.set)
-        self.scroll_y.pack(side=tk.RIGHT, fill=tk.Y)
-        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-
-        self.frame = tk.Frame(self.canvas, bg=Constants.BG_COLOR)
-        self.canvas.create_window((0, 0), window=self.frame, anchor="nw")
-        self.frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
-        self.canvas.bind_all("<MouseWheel>", self._on_mouse_wheel)
-        self.canvas.bind_all("<Button-4>", lambda e: self.canvas.yview_scroll(-1, "units"))
-        self.canvas.bind_all("<Button-5>", lambda e: self.canvas.yview_scroll(1, "units"))
-
-
-        self.root.grid_rowconfigure(1, weight=1)
-        self.root.grid_columnconfigure(0, weight=1)
-
-    def _on_mouse_wheel(self, event):
-        if self.canvas.yview() == (0.0, 1.0): return
-        delta = -1 * int(event.delta / 120) * 2 if os.name == 'nt' else -1 * int(event.delta)
-        self.canvas.yview_scroll(delta, "units")
-
-    def _on_root_resize(self, event):
-        width = self.root.winfo_width()
-        item_w = Constants.ITEM_WIDTH + Constants.PADDING_X
-        new_columns = max(1, width // item_w)
-        if new_columns != self.num_columns:
-            self.num_columns = new_columns
-            self._place_products()
+    def resizeEvent(self, event):
+        width = self.width()
+        item_w = Constants.ITEM_WIDTH
+        new_cols = max(1, width // item_w)
+        if new_cols != self.num_columns:
+            self.num_columns = new_cols
+            self.place_products()
+        super().resizeEvent(event)
 
     def _run_in_thread(self, func):
         threading.Thread(target=func, daemon=True).start()
 
     def _update_selected_count_label(self):
-        self.filter_frame.selected_product_count_label.config(
-            text=f"Markiert: {len(self.selected_products)}")
+        self.filter_frame.selected_product_count_label.setText(
+            f"Markiert: {len(self.selected_products)}"
+        )
 
     def _check_log(self):
         if Utils.contains_error():
-            self.filter_frame.update_status_label("Fehlerlog einträge vorhanden!", "error")
+            self.filter_frame.update_status_label(
+                "Fehlerlog einträge vorhanden!", "error"
+            )
 
-    # --- Produktanzeige ---
+    def load_products(self):
+        raw_products = self.process._fetch_all_products()
+        self.all_products = [ProductFactory.from_source(p) for p in raw_products]
+        self.on_products_loaded()
+        self._check_log()
 
-    def _place_products(self):
+    def on_products_loaded(self):
+        self.filter_frame.update_category_counts(self.all_products)
+        self.apply_filters()
+        self._update_selected_count_label()
+
+    def apply_filters_debounced(self):
+        text = self.filter_frame.search_entry.text().strip()
+        if "galaxus" in text or "digitec" in text:
+            self.add_favorite()
+            return
+        self.filter_timer.start(0)
+
+    def apply_sort(self):
+        sort_option = self.filter_frame.sort_combobox.currentText()
+        sort_key = self.sort_options.get(sort_option)
+        if sort_key:
+            self.filtered_products = sorted(self.filtered_products, key=sort_key)
+        self.place_products()
+
+    def apply_filters(self):
+        search_text = self.filter_frame.search_entry.text().strip().lower()
+        selected_category_display = self.filter_frame.category_combobox.currentText()
+        min_price = self.filter_frame.min_price_var.isChecked()
+        only_updates = self.filter_frame.only_updates.isChecked()
+        selected_category = "" if selected_category_display == Constants.CATEGORY_DEFAULT else self.filter_frame.category_mapping.get(selected_category_display, "")
+        self.filtered_products = [
+            p for p in self.all_products
+            if Utils.matches_filters(p, min_price, search_text, selected_category, only_updates)
+        ]
+        self.apply_sort()
+
+    def place_products(self):
+        for i in reversed(range(self.grid.count())):
+            widget = self.grid.itemAt(i).widget()
+            if widget:
+                widget.setParent(None)
+        self.product_widgets = []
         num_products = len(self.filtered_products)
-
-        while len(self.product_widgets) < num_products:
-            self.product_widgets.append(ProductWidget(self.frame, None, None, self._select_product))
-
-        for widget in self.product_widgets[num_products:]:
-            widget.place_forget()
-
-        self.filter_frame.product_count_label.config(text=f"Produkte: {num_products}")
-
-        width, height = Constants.ITEM_WIDTH, Constants.ITEM_HEIGHT
-        item_w = width + Constants.PADDING_X
-        item_h = height + Constants.PADDING_Y
-        num_columns = self.num_columns
-
-        frame_width = num_columns * item_w - Constants.PADDING_X
-        frame_height = ((num_products + num_columns - 1) // num_columns) * item_h - Constants.PADDING_Y
-        self.frame.config(width=frame_width, height=frame_height)
-
+        self.filter_frame.product_count_label.setText(f"Produkte: {num_products}")
+        item_w = Constants.ITEM_WIDTH
+        item_h = Constants.ITEM_HEIGHT
         for idx, product in enumerate(self.filtered_products):
-            widget = self.product_widgets[idx]
-            widget.update_product(product, Utils.get_border_color(product))
-
-            col, row = idx % num_columns, idx // num_columns
-            x, y = col * item_w, row * item_h
-            widget.place(x=x, y=y, width=width, height=height)
-
-        self.canvas.config(scrollregion=self.canvas.bbox("all"))
-        self.filter_frame.search_entry.focus_set()
-
-    # --- Produktlogik ---
+            widget = ProductWidget(
+                self.scroll_area_widget,
+                product,
+                Utils.get_border_color(product),
+                self._select_product,
+            )
+            row = idx // self.num_columns
+            col = idx % self.num_columns
+            self.grid.addWidget(widget, row, col)
+            self.product_widgets.append(widget)
 
     def _select_product(self, product_id, is_selected):
         if is_selected:
@@ -154,116 +153,62 @@ class ProductListApp:
 
     def delete_selected_products(self):
         count = len(self.selected_products)
-
         for product_id in self.selected_products:
-            self.galaxo_process.delete_product(product_id)
-            product = next((p for p in self.all_products if p.product_id == product_id), None)
-            Utils.delete_image(product.image_url)
-
-        if(len(self.filtered_products) == len(self.selected_products) and self.filter_frame.only_updates):
-            self.filter_frame.only_updates.set(False)
-
+            self.process.delete_product(product_id)
+            product = next(
+                (p for p in self.all_products if p.product_id == product_id), None
+            )
+            if product:
+                Utils.delete_image(product.image_url)
+        if len(self.filtered_products) == count and self.filter_frame.only_updates.isChecked():
+            self.filter_frame.only_updates.setChecked(False)
         self.selected_products.clear()
-        self._load_products()
+        self.load_products()
         self.filter_frame.update_status_label(f"{count} Product gelöscht!")
 
-    def _update_prices(self):
+    def update_prices(self):
         self._run_in_thread(self._update_prices_thread)
 
     def _update_prices_thread(self):
         try:
-            self.galaxo_process.process_update_prices()
+            self.process.process_update_prices()
             self.filter_frame.update_status_label("Update abgeschlossen")
-
-            if(self.filter_frame.only_updates):
-                self.filter_frame.only_updates.set(False)
-
-            self._load_products()
+            if self.filter_frame.only_updates.isChecked():
+                self.filter_frame.only_updates.setChecked(False)
+            self.load_products()
         except Exception as e:
-            self.filter_frame.update_status_label(f"Fehler beim Aktualisieren der Preise: {e}", "error")
+            self.filter_frame.update_status_label(
+                f"Fehler beim Aktualisieren der Preise: {e}", "error"
+            )
             Constants.LOGGER.error(f"Fehler beim Aktualisieren der Preise: {e}")
 
-    def _add_favorit(self):
-        self._run_in_thread(self._add_favorit_thread)
+    def add_favorite(self):
+        self._run_in_thread(self._add_favorite_thread)
 
-    def _add_favorit_thread(self):
-        url = self.filter_frame.search_entry.get().strip()
-        self.filter_frame.search_entry.delete(0, tk.END)
+    def _add_favorite_thread(self):
+        url = self.filter_frame.search_entry.text().strip()
+        self.filter_frame.search_entry.setText("")
         try:
             product_id = Utils.extract_product_id_from_url(url)
-            if self.galaxo_process.get_product(product_id):
-                self.filter_frame.update_status_label(f"Product {product_id} existiert bereits!", "warning")
+            if self.process.get_product(product_id):
+                self.filter_frame.update_status_label(
+                    f"Product {product_id} existiert bereits!", "warning"
+                )
             else:
-                self.galaxo_process.insert_favorite_by_url(url)
-                self._load_products()
-                self.filter_frame.update_status_label(f"Product {int(product_id)} hinzugefügt!")
+                self.process.insert_favorite_by_url(url)
+                self.load_products()
+                self.filter_frame.update_status_label(
+                    f"Product {int(product_id)} hinzugefügt!"
+                )
         except Exception as e:
-            self.filter_frame.update_status_label(f"Fehler beim Hinzufügen des Produkts: {e}", "error")
+            self.filter_frame.update_status_label(
+                f"Fehler beim Hinzufügen des Produkts: {e}", "error"
+            )
             Constants.LOGGER.error(f"Fehler beim Hinzufügen des Produkts: {e}")
             self._check_log()
 
-    # --- Filter & Sortierung ---
-
-    def _apply_filters_debounced(self, event=None):
-        if event.keysym in ["Left", "Right", "Up", "Down"]:
-            return
-        current_text = self.filter_frame.search_entry.get().strip().lower()
-        if 'galaxus' in current_text or 'digitec' in current_text:
-            self._add_favorit()
-            return
-        if hasattr(self, '_filter_debounce_id'):
-            self.root.after_cancel(self._filter_debounce_id)
-        self._filter_debounce_id = self.root.after_idle(self.apply_filters)
-
-    def _apply_sort(self, event=None):
-        self.filtered_products = self._apply_sort_to_list(self.filtered_products)
-        self.filter_frame.sort_combobox.selection_clear()
-        self.selected_products.clear()
-        self._update_selected_count_label()
-        self._place_products()
-
-    def apply_filters(self, event=None):
-        self.filtered_products = self._get_filtered_products()
-        self.filtered_products = self._apply_sort_to_list(self.filtered_products)
-        self.filter_frame.category_combobox.selection_clear()
-        self.selected_products.clear()
-        self._update_selected_count_label()
-        self._place_products()
-
-    def _get_filtered_products(self) -> list:
-        search_text = self.filter_frame.search_entry.get().strip().lower()
-        selected_category_display = self.filter_frame.category_combobox.get()
-        min_price = self.filter_frame.min_price_var.get()
-        only_updates = self.filter_frame.only_updates.get()
-        selected_category = "" if selected_category_display == Constants.CATEGORY_DEFAULT else self.filter_frame.category_mapping.get(selected_category_display, "")
-        return [
-            p for p in self.all_products
-            if Utils.matches_filters(p, min_price, search_text, selected_category, only_updates)
-        ]
-
-    def _apply_sort_to_list(self, products: list) -> list:
-        sort_option = self.filter_frame.sort_combobox.get()
-        sort_key = self.sort_options.get(sort_option)
-        return sorted(products, key=sort_key) if sort_key else products
-
-    # --- Datenladen ---
-
-    def _load_products(self):
-        try:
-            raw_products = self.galaxo_process._fetch_all_products()
-            self.all_products = [ProductFactory.from_source(p) for p in raw_products]
-            self._on_products_loaded()
-            self._check_log()
-        except Exception as e:
-            Constants.LOGGER.error(f"Fehler beim Laden der Produkte: {e}")
-
-    def _on_products_loaded(self):
-        self.filter_frame.update_category_counts(self.all_products)
-        self.apply_filters()
-        self._update_selected_count_label()
-
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = ProductListApp(root)
-    root.protocol("WM_DELETE_WINDOW", lambda: (app.galaxo_process.close(), root.destroy()))
-    root.mainloop()
+    app = QApplication(sys.argv)
+    window = ProductListWindow()
+    window.show()
+    sys.exit(app.exec())

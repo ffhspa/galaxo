@@ -2,4 +2,5 @@ requests
 Pillow
 pyvirtualdisplay
 playwright
+PyQt6
 
