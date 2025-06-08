@@ -14,16 +14,20 @@ class ProductWidget(QFrame):
         self.product = None
         self.toggle_selection_callback = toggle_selection_callback
         self.is_selected = False
+
         self.layout = QVBoxLayout(self)
         self.image_label = QLabel()
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.layout.addWidget(self.image_label)
         self.text_labels = []
+
         self.single_click_timer = QTimer(self)
         self.single_click_timer.setSingleShot(True)
         self.single_click_timer.timeout.connect(self._toggle_selection)
+
         if product:
             self.update_product(product, border_color)
+
         self.setStyleSheet("background:white")
         self.setFrameShape(QFrame.Shape.StyledPanel)
         self.setLineWidth(2)
@@ -47,6 +51,7 @@ class ProductWidget(QFrame):
         if not self.product or not self.product.image_url:
             self.image_label.setText("Kein Bild")
             return
+
         cache_path = Utils.get_file_hash_path(self.product.image_url)
         if not os.path.exists(cache_path):
             try:
@@ -56,6 +61,7 @@ class ProductWidget(QFrame):
                     f.write(resp.content)
             except Exception:
                 cache_path = None
+
         if cache_path and os.path.exists(cache_path):
             pixmap = QPixmap(cache_path)
             if not pixmap.isNull():
@@ -66,6 +72,7 @@ class ProductWidget(QFrame):
                 )
                 self.image_label.setPixmap(pixmap)
                 return
+
         self.image_label.setText("Kein Bild")
 
     def _create_labels(self, config):
@@ -105,7 +112,5 @@ class ProductWidget(QFrame):
         self.product = product
         self.is_selected = False
         self._set_border(border_color)
-        self.setStyleSheet(f"background:white;border:2px solid {border_color}")
         self._update_image()
         self._update_labels()
-

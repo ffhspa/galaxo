@@ -2,12 +2,14 @@ import os
 import sys
 import atexit
 import threading
+
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QScrollArea,
     QGridLayout
 )
 from PyQt6.QtCore import QTimer
 from pyvirtualdisplay import Display
+
 from PROCESS.GalaxoProcess import GalaxoProcess
 from PROCESS.ProductFactory import ProductFactory
 from CONFIG.Constants import Constants
@@ -60,6 +62,7 @@ class ProductListWindow(QMainWindow):
         self.filter_timer = QTimer()
         self.filter_timer.setSingleShot(True)
         self.filter_timer.timeout.connect(self.apply_filters)
+
         self.load_products()
 
     def resizeEvent(self, event):
