@@ -41,7 +41,7 @@ class GalaxoProcess:
     def process_update_prices(self):
         for pd in self._cached_products:
             try:
-                details = self.product_client.get_full_product_details(pd.product_id)
+                details = self.product_client.get_full_product_details(pd.product_id, include_price_history=False)
                 if details:
                     ProductFactory.update_existing(pd, details)
             except Exception as e:

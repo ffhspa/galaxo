@@ -50,19 +50,21 @@ class ProductClient:
         if self.price_history_client is None:
             self.price_history_client = PriceHistoryClient()
 
-    def get_full_product_details(self, product_id: str) -> Optional[ProductDetails]:
+    def get_full_product_details(self, product_id: str, include_price_history: bool = True) -> Optional[ProductDetails]:
+        """Fetch product details and optionally the price history."""
         self._ensure_clients()
         self.logger.info(f"Fetching full product details for: {product_id}")
         try:
             pdp_data = self.details_client.get_product_details_pdp(product_id)
-
-            try:
-                price_history = self.price_history_client.get_pdp_price_history(product_id)
-            except Exception as e:
-                self.logger.warning(
-                    f"Price history unavailable for {product_id}: {e}", exc_info=True
-                )
-                price_history = {}
+            price_history = {}
+            if include_price_history:
+                try:
+                    price_history = self.price_history_client.get_pdp_price_history(product_id)
+                except Exception as e:
+                    self.logger.warning(
+                        f"Price history unavailable for {product_id}: {e}", exc_info=True
+                    )
+                    price_history = {}
 
             try:
                 stock_count = self.availability_client.get_offer_availability(
