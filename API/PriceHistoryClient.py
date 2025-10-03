@@ -1,7 +1,7 @@
 from datetime import datetime
 from dataclasses import dataclass
 from CONFIG.Constants import Constants
-from API.GraphQLClient import GraphQLClient
+from API.RequestGraphQLClient import RequestGraphQLClient
 import base64
 import json
 
@@ -11,7 +11,7 @@ class PriceHistoryPoint:
     amount_incl: float
     valid_from: str
 
-class PriceHistoryClient(GraphQLClient):
+class PriceHistoryClient(RequestGraphQLClient):
 
     def __init__(self, max_retries: int = 5, backoff_factor: float = 1.0, timeout: int = 5):
         super().__init__(max_retries=max_retries, backoff_factor=backoff_factor, timeout=timeout)
