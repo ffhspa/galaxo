@@ -66,8 +66,7 @@ class ImageLoader:
                 image_copy = img.copy()
             self.image_label.after(0, lambda: self._display_image(image_copy, path))
         except Exception as e:
-            Constants.LOGGER.exception("Fehler beim Öffnen/Croppen des Bildes")
-
+            Constants.LOGGER.ERROR("Fehler beim Öffnen/Croppen des Bildes")
     def _display_image(self, pil_image, path):
         try:
             self.photo_image = ImageTk.PhotoImage(pil_image)
@@ -75,4 +74,4 @@ class ImageLoader:
             self.image_label.image = self.photo_image
             self.image_label.image_path = path
         except Exception as e:
-            Constants.LOGGER.exception("Fehler bei ImageTk.PhotoImage")
+            Constants.LOGGER.ERROR("Fehler bei ImageTk.PhotoImage")

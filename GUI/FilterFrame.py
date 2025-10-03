@@ -31,10 +31,6 @@ class FilterFrame(ttk.LabelFrame):
         # Kategorie Combobox in Spalte 1
         self.category_combobox = self._create_combobox(1, "Kategorien")
         self.category_combobox.bind("<<ComboboxSelected>>", self.apply_filters_callback)
-
-        # Nur Min-Preis Checkbox in Spalte 2
-        self.min_price_var = tk.BooleanVar(value=False)
-        self._create_checkbox("Min-Preis", self.min_price_var, self.apply_filters_callback, 0, 2)
         
         # Nur Aktuelle Checkbox in Spalte 3
         self.only_updates = tk.BooleanVar(value=False)
@@ -48,7 +44,7 @@ class FilterFrame(ttk.LabelFrame):
         self.delete_button = ttk.Button(self, text="Löschen", command=self.delete_selected_products_callback)
         self.delete_button.grid(row=0, column=6, padx=5, pady=5, sticky="w")
                 
-        self.update_button = ttk.Button(self, text="Preise aktualisieren", command=self.update_prices_callback)
+        self.update_button = ttk.Button(self, text="Aktualisieren", command=self.update_prices_callback)
         self.update_button.grid(row=0, column=7, padx=5, pady=5, sticky="w")
         
         self.status_update_label = self._create_label("", 0, 8, colspan=1, sticky="w",font=Constants.FONT_SIZE_VERY_SMALL)
@@ -65,37 +61,11 @@ class FilterFrame(ttk.LabelFrame):
         self.search_entry.bind("<KeyRelease>", self.apply_filters_debounced)
         self.search_entry.bind("<Control-a>", self._select_all_search)
         
-        
-                # Loglevel-Dropdown ganz rechts neben dem Suchfeld
-        self.loglevel_combobox = ttk.Combobox(search_frame, width=10, state='readonly', font=Utils.create_font(Constants.FONT_SIZE_SMALL))
-        self.loglevel_combobox['values'] = LogLevel.get_level_names()
-        self.loglevel_combobox.set('WARNING')
-        self.loglevel_combobox.pack(side="left", padx=(10, 0))
-        self.loglevel_combobox.bind("<<ComboboxSelected>>", self._on_loglevel_changed)
-
-
-    def _on_loglevel_changed(self, event):
-        from CONFIG.LogLevel import LogLevel
-
-        selected_level = self.loglevel_combobox.get().upper()
-        level = getattr(LogLevel, selected_level, LogLevel.WARNING)
-        Constants.set_log_level(level)
-        #self.focus_set()
-        #self.search_entry.focus_set()
-            # Fokus komplett entfernen
-        self.parent.focus_set()
-        self.loglevel_combobox.selection_clear()
-        Constants.LOGGER.info(f"Loglevel:{selected_level}")
-        self.update_status_label(f"Loglevel:{selected_level}", severity="info")
-
 
     def _select_all_search(self, event):
         event.widget.select_range(0, tk.END)
         event.widget.icursor(tk.END)
         return "break"
-
-
-
 
     def update_status_label(self, text, severity="info"):
         Constants.LOGGER.info(f"update_status_label {severity}: {text}")
