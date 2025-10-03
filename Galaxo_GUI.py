@@ -3,8 +3,6 @@ import tkinter as tk
 from tkinter import ttk
 import os
 import sys
-from pyvirtualdisplay import Display
-import atexit
 from PROCESS.GalaxoProcess import GalaxoProcess
 from CONFIG.Constants import Constants
 from GUI.FilterFrame import FilterFrame
@@ -12,12 +10,6 @@ from GUI.ProductWidget import ProductWidget
 from UTILS.Utils import Utils
 from PROCESS.ProductFactory import ProductFactory
 
-# Start a virtual X display if none is available
-display = None
-if sys.platform.startswith("linux") and not os.environ.get("DISPLAY"):
-    display = Display(visible=False, size=(1024, 768))
-    display.start()
-    atexit.register(display.stop)
 
 class ProductListApp:
     def __init__(self, root):
@@ -40,7 +32,6 @@ class ProductListApp:
         screen_w = self.root.winfo_screenwidth()
         item_w = Constants.ITEM_WIDTH + Constants.PADDING_X
         self.num_columns = max(1, screen_w // item_w)
-        self.galaxo_process = GalaxoProcess()
 
         self.all_products = []
         self.filtered_products = []
@@ -154,9 +145,9 @@ class ProductListApp:
 
     def delete_selected_products(self):
         count = len(self.selected_products)
-
+        galaxo_process = GalaxoProcess()
         for product_id in self.selected_products:
-            self.galaxo_process.delete_product(product_id)
+            galaxo_process.delete_product(product_id)
             product = next((p for p in self.all_products if p.product_id == product_id), None)
             Utils.delete_image(product.image_url)
 
@@ -164,6 +155,7 @@ class ProductListApp:
             self.filter_frame.only_updates.set(False)
 
         self.selected_products.clear()
+        galaxo_process.close()
         self._load_products()
         self.filter_frame.update_status_label(f"{count} Product gelöscht!")
 
@@ -172,12 +164,14 @@ class ProductListApp:
 
     def _update_prices_thread(self):
         try:
-            self.galaxo_process.process_update_prices()
+            galaxo_process = GalaxoProcess()
+            galaxo_process.process_update_prices()
             self.filter_frame.update_status_label("Update abgeschlossen")
 
             if(self.filter_frame.only_updates):
                 self.filter_frame.only_updates.set(False)
 
+            galaxo_process.close()
             self._load_products()
         except Exception as e:
             self.filter_frame.update_status_label(f"Fehler beim Aktualisieren der Preise: {e}", "error")
@@ -189,14 +183,16 @@ class ProductListApp:
     def _add_favorit_thread(self):
         url = self.filter_frame.search_entry.get().strip()
         self.filter_frame.search_entry.delete(0, tk.END)
+        galaxo_process = GalaxoProcess()
         try:
             product_id = Utils.extract_product_id_from_url(url)
-            if self.galaxo_process.get_product(product_id):
+            if galaxo_process.get_product(product_id):
                 self.filter_frame.update_status_label(f"Product {product_id} existiert bereits!", "warning")
             else:
-                self.galaxo_process.insert_favorite_by_url(url)
+                galaxo_process.insert_favorite_by_url(url)
                 self._load_products()
                 self.filter_frame.update_status_label(f"Product {int(product_id)} hinzugefügt!")
+            galaxo_process.close()
         except Exception as e:
             self.filter_frame.update_status_label(f"Fehler beim Hinzufügen des Produkts: {e}", "error")
             Constants.LOGGER.error(f"Fehler beim Hinzufügen des Produkts: {e}")
@@ -233,12 +229,12 @@ class ProductListApp:
     def _get_filtered_products(self) -> list:
         search_text = self.filter_frame.search_entry.get().strip().lower()
         selected_category_display = self.filter_frame.category_combobox.get()
-        min_price = self.filter_frame.min_price_var.get()
+        
         only_updates = self.filter_frame.only_updates.get()
         selected_category = "" if selected_category_display == Constants.CATEGORY_DEFAULT else self.filter_frame.category_mapping.get(selected_category_display, "")
         return [
             p for p in self.all_products
-            if Utils.matches_filters(p, min_price, search_text, selected_category, only_updates)
+            if Utils.matches_filters(p, search_text, selected_category, only_updates)
         ]
 
     def _apply_sort_to_list(self, products: list) -> list:
@@ -250,10 +246,12 @@ class ProductListApp:
 
     def _load_products(self):
         try:
-            raw_products = self.galaxo_process._fetch_all_products()
+            galaxo_process = GalaxoProcess()
+            raw_products = galaxo_process._fetch_all_products()
             self.all_products = [ProductFactory.from_source(p) for p in raw_products]
             self._on_products_loaded()
             self._check_log()
+            galaxo_process.close()
         except Exception as e:
             Constants.LOGGER.error(f"Fehler beim Laden der Produkte: {e}")
 
@@ -265,5 +263,4 @@ class ProductListApp:
 if __name__ == "__main__":
     root = tk.Tk()
     app = ProductListApp(root)
-    root.protocol("WM_DELETE_WINDOW", lambda: (app.galaxo_process.close(), root.destroy()))
     root.mainloop()
