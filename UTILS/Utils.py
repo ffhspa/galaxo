@@ -17,6 +17,7 @@ class Utils:
                 Constants.SORT_PRICE_UP: lambda x: float(x.current_price),
                 Constants.SORT_PRICE_DOWN: lambda x: -float(x.current_price),
                 Constants.SORT_TIME: lambda x: -int(x.insert_date),
+                Constants.SORT_VERLUST: lambda x: -int(x.preisverlust_percentage),
         }
 
     @staticmethod
@@ -62,8 +63,7 @@ class Utils:
         return Constants.DEFAULT_BORDER_COLOR
 
     @staticmethod
-    def matches_filters(product, min_price_filter, search_text, selected_category,only_updates):
-        price_match = not min_price_filter or product.min_flag
+    def matches_filters(product, search_text, selected_category,only_updates):
         updates = not only_updates or (product.both_changed_flag or product.stock_changed_flag or product.price_changed_flag)
         
         category_match = selected_category in ["", product.category_name or ""]
@@ -82,7 +82,7 @@ class Utils:
                 if field
             )
 
-        return price_match and category_match and search_match and updates
+        return category_match and search_match and updates
 
     @staticmethod
     def get_file_hash_path(image_url):
@@ -105,7 +105,6 @@ class Utils:
                 Constants.LOGGER.warning(f"Bild existiert nicht oder konnte nicht geladen werden: {image_url}")
         except Exception as e:
             Constants.LOGGER.error(f"Fehler beim Löschen des Bildes: {e}")
-
 
 
     @staticmethod
