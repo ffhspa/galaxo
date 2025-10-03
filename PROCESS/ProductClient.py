@@ -59,6 +59,9 @@ class ProductClient:
         """Fetch product details and optionally the price history."""
         self._ensure_clients(include_price_history=include_price_history)
         self.logger.info(f"Fetching full product details for: {product_id}")
+        if product_id == '0' or product_id ==0:
+            self.logger.warning(f"wrong product id {product_id}")
+            return
         try:
             pdp_data = self.details_client.get_product_details_pdp(product_id)
             price_history = {}
