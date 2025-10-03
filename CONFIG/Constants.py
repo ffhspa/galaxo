@@ -4,10 +4,10 @@ from LOGGER.Logger import Logger
 
 class Constants:
     
-    LOG_LEVEL = LogLevel.WARNING
+    LOG_LEVEL = LogLevel.ERROR  #INFO, ERROR,DEBUG,WARNING
     #Logger
     BASE_PATH = __import__('pathlib').Path(__file__).resolve().parents[1]  
-    LOG_PATH =   os.path.join(BASE_PATH,'Logs')
+    LOG_PATH =   os.path.join(BASE_PATH,'')
     LOG_FILE_NAME = "galaxo.log"
     CACHE_DIR_IMAGES = os.path.join(BASE_PATH,'Images') 
     LOGGER = Logger(LOG_PATH,LOG_FILE_NAME,LOG_LEVEL).get_logger()
@@ -19,7 +19,7 @@ class Constants:
     TITLE="Galaxus/Digitec Produkte"
     IMAGE_SIZE =(250, 250)
     ITEM_WIDTH = 460
-    ITEM_HEIGHT = 360
+    ITEM_HEIGHT = 420
     CHAR_LIMIT = 40
     WRAPLENGTH = 240
     NUM_COLUMNS = 4
@@ -87,6 +87,7 @@ class Constants:
     SORT_PRICE_UP = "Preis aufsteigend"
     SORT_PRICE_DOWN = "Preis absteigend"
     SORT_TIME = "Zeit absteigend"
+    SORT_VERLUST = "Verlust absteigend"
     
     SORT_DEFAULT = SORT_PRICE_UP
             
@@ -138,14 +139,3 @@ class Constants:
                 'category_name':         (PRODUCT_INFO_CATEGORY_NAME, FONT_SIZE_VERY_SMALL, None),                
             }
         }
-    
-    @classmethod
-    def set_log_level(cls, new_level):
-        """
-        Setzt den neuen LogLevel sowohl in der Konstante als auch im Logger.
-        """
-        from CONFIG.LogLevel import LogLevel  # sicherstellen, dass Mapping aktuell ist
-
-        cls.LOG_LEVEL = new_level
-        cls.LOGGER.setLevel(new_level)
-        cls.LOGGER.info(f"Loglevel wurde auf {new_level} gesetzt.")
